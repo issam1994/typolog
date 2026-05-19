@@ -1,0 +1,35 @@
+# Build output
+.next/
+out/
+build/
+
+# Dependencies
+node_modules/
+
+# Package manager lockfiles (large, auto-generated)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Environment & secrets
+.env*
+
+# Git internals
+.git/
+
+# Husky internals
+.husky/_/
+
+# Misc
+.DS_Store
+*.pem
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Public assets (binary/image files)
+public/*.svg
+public/*.ico
+src/app/favicon.ico

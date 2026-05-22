@@ -16,18 +16,18 @@ export default function AdminError({
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-6 py-24 text-center">
-      <p className="text-white/50 mb-2 text-sm">Something went wrong.</p>
+      <p className="text-foreground/50 mb-2 text-sm">Something went wrong.</p>
       <p className="text-xs text-muted mb-8">{error.message}</p>
       <div className="flex gap-4">
         <button
           onClick={reset}
-          className="px-5 py-2 text-sm bg-white text-black hover:bg-white/90 transition-colors"
+          className="px-5 py-2 text-sm bg-foreground text-background hover:bg-foreground/90 transition-colors"
         >
           Try again
         </button>
         <Link
           href="/admin"
-          className="px-5 py-2 text-sm border border-border text-muted hover:text-white transition-colors"
+          className="px-5 py-2 text-sm border border-border text-muted hover:text-foreground transition-colors"
         >
           Dashboard
         </Link>

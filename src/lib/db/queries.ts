@@ -1,45 +1,145 @@
-import type { Question, Trait, Submission } from "@/types/shared/quiz";
+import type {
+  Question,
+  Trait,
+  Submission,
+  Test,
+  Archetype,
+} from "@/types/shared/quiz";
 import { createClient } from "./supabase-server";
 
-export async function getQuiz(): Promise<{
-  questions: Question[];
-  traits: Trait[];
-}> {
+// ─── Tests ────────────────────────────────────────────────────────────────────
+
+export async function getPublishedTests(): Promise<Test[]> {
   const supabase = await createClient();
-  const [{ data: questions }, { data: traits }] = await Promise.all([
+  const { data } = await supabase
+    .from("tests")
+    .select("*")
+    .eq("is_published", true)
+    .order("sort_order");
+  return data ?? [];
+}
+
+export async function getAllTests(): Promise<Test[]> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("tests").select("*").order("sort_order");
+  return data ?? [];
+}
+
+export async function getTest(slug: string): Promise<Test | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("tests")
+    .select("*")
+    .eq("slug", slug)
+    .single();
+  return data;
+}
+
+type TestBundle = {
+  test: Test;
+  traits: Trait[];
+  questions: Question[];
+};
+
+export async function getTestBundle(slug: string): Promise<TestBundle | null> {
+  const test = await getTest(slug);
+  if (!test) return null;
+
+  const supabase = await createClient();
+  const [{ data: rawTraits }, { data: rawQuestions }] = await Promise.all([
+    supabase
+      .from("traits")
+      .select("*")
+      .eq("test_id", test.id)
+      .order("sort_order"),
     supabase
       .from("questions")
-      .select("*")
+      .select("*, question_options(*)")
+      .eq("test_id", test.id)
       .is("deleted_at", null)
       .order("sort_order"),
-    supabase.from("traits").select("*").order("sort_order"),
   ]);
-  return { questions: questions ?? [], traits: traits ?? [] };
+
+  const traits: Trait[] = rawTraits ?? [];
+  const questions: Question[] = (rawQuestions ?? []).map((q) => {
+    const { question_options, ...rest } = q as typeof q & {
+      question_options: Question["options"];
+    };
+    const options = (question_options ?? []).sort(
+      (a: { sort_order: number }, b: { sort_order: number }) =>
+        a.sort_order - b.sort_order,
+    );
+    return { ...rest, options } as Question;
+  });
+
+  return { test, traits, questions };
 }
 
-export async function getAllQuestions(): Promise<Question[]> {
+// ─── Archetypes ───────────────────────────────────────────────────────────────
+
+export async function getArchetypes(testId: string): Promise<Archetype[]> {
   const supabase = await createClient();
   const { data } = await supabase
-    .from("questions")
+    .from("archetypes")
     .select("*")
+    .eq("test_id", testId)
+    .order("sort_order");
+  return data ?? [];
+}
+
+export async function getArchetype(
+  testId: string,
+  code: string,
+): Promise<Archetype | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("archetypes")
+    .select("*")
+    .eq("test_id", testId)
+    .eq("code", code)
+    .single();
+  return data;
+}
+
+// ─── Traits ───────────────────────────────────────────────────────────────────
+
+export async function getAllTraits(testId?: string): Promise<Trait[]> {
+  const supabase = await createClient();
+  let query = supabase.from("traits").select("*").order("sort_order");
+  if (testId) query = query.eq("test_id", testId);
+  const { data } = await query;
+  return data ?? [];
+}
+
+// ─── Questions ────────────────────────────────────────────────────────────────
+
+export async function getAllQuestions(testId?: string): Promise<Question[]> {
+  const supabase = await createClient();
+  let query = supabase
+    .from("questions")
+    .select("*, question_options(*)")
     .is("deleted_at", null)
     .order("sort_order");
-  return data ?? [];
+  if (testId) query = query.eq("test_id", testId);
+  const { data } = await query;
+  return (data ?? []).map((q) => {
+    const { question_options, ...rest } = q as typeof q & {
+      question_options: Question["options"];
+    };
+    const options = (question_options ?? []).sort(
+      (a: { sort_order: number }, b: { sort_order: number }) =>
+        a.sort_order - b.sort_order,
+    );
+    return { ...rest, options } as Question;
+  });
 }
 
-export async function getAllTraits(): Promise<Trait[]> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("traits")
-    .select("*")
-    .order("sort_order");
-  return data ?? [];
-}
+// ─── Submissions ──────────────────────────────────────────────────────────────
 
 export async function getSubmissions(
-  opts: { before?: string; limit?: number } = {},
+  opts: { before?: string; limit?: number; testId?: string } = {},
 ): Promise<Submission[]> {
-  const { before, limit = 50 } = opts;
+  const { before, limit = 50, testId } = opts;
   const supabase = await createClient();
   let query = supabase
     .from("submissions")
@@ -47,6 +147,7 @@ export async function getSubmissions(
     .order("submitted_at", { ascending: false })
     .limit(limit);
   if (before) query = query.lt("submitted_at", before);
+  if (testId) query = query.eq("test_id", testId);
   const { data } = await query;
   return data ?? [];
 }
@@ -61,6 +162,8 @@ export async function getSubmission(id: string): Promise<Submission | null> {
   return data;
 }
 
+// ─── Stats ────────────────────────────────────────────────────────────────────
+
 export type OverviewStats = {
   total: number;
   last7d: number;
@@ -71,6 +174,7 @@ export type OverviewStats = {
 
 export async function getOverviewStats(
   traits: Trait[],
+  testId?: string,
 ): Promise<OverviewStats> {
   const supabase = await createClient();
 
@@ -78,23 +182,32 @@ export async function getOverviewStats(
   const d7 = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const d30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
+  const baseQuery = () => {
+    let q = supabase.from("submissions").select("*", {
+      count: "exact",
+      head: true,
+    });
+    if (testId) q = q.eq("test_id", testId);
+    return q;
+  };
+
   const [{ count: total }, { count: last7d }, { data: recent }] =
     await Promise.all([
-      supabase.from("submissions").select("*", { count: "exact", head: true }),
-      supabase
-        .from("submissions")
-        .select("*", { count: "exact", head: true })
-        .gte("submitted_at", d7),
-      supabase
-        .from("submissions")
-        .select("submitted_at, scores")
-        .gte("submitted_at", d30)
-        .order("submitted_at"),
+      baseQuery(),
+      baseQuery().gte("submitted_at", d7),
+      (() => {
+        let q = supabase
+          .from("submissions")
+          .select("submitted_at, scores")
+          .gte("submitted_at", d30)
+          .order("submitted_at");
+        if (testId) q = q.eq("test_id", testId);
+        return q;
+      })(),
     ]);
 
   const last30dData = recent ?? [];
 
-  // Submissions per day (last 30 days)
   const dayCounts: Record<string, number> = {};
   const days: string[] = [];
   for (let i = 29; i >= 0; i--) {
@@ -109,19 +222,18 @@ export async function getOverviewStats(
   });
   const dailyCounts = days.map((date) => ({ date, count: dayCounts[date] }));
 
-  // Per-trait averages
   const traitSums: Record<string, number> = {};
   const traitCounts2: Record<string, number> = {};
-  traits.forEach(({ id }) => {
-    traitSums[id] = 0;
-    traitCounts2[id] = 0;
+  traits.forEach(({ slug }) => {
+    traitSums[slug] = 0;
+    traitCounts2[slug] = 0;
   });
   last30dData.forEach((s) => {
     const scores = s.scores as Record<string, number>;
-    Object.entries(scores).forEach(([tid, pct]) => {
-      if (tid in traitSums) {
-        traitSums[tid] += pct;
-        traitCounts2[tid]++;
+    Object.entries(scores).forEach(([slugKey, pct]) => {
+      if (slugKey in traitSums) {
+        traitSums[slugKey] += pct;
+        traitCounts2[slugKey]++;
       }
     });
   });
@@ -129,8 +241,8 @@ export async function getOverviewStats(
     id: t.id,
     label: t.label,
     average:
-      traitCounts2[t.id] > 0
-        ? Math.round(traitSums[t.id] / traitCounts2[t.id])
+      traitCounts2[t.slug] > 0
+        ? Math.round(traitSums[t.slug] / traitCounts2[t.slug])
         : 0,
   }));
 

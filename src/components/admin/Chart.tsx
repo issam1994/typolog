@@ -52,7 +52,8 @@ export function LineChart({ data }: { data: LinePoint[] }) {
               y1={y}
               x2={W - PAD.right}
               y2={y}
-              stroke="rgba(255,255,255,0.07)"
+              stroke="currentColor"
+              strokeOpacity="0.1"
               strokeWidth="1"
             />
             <text
@@ -60,7 +61,8 @@ export function LineChart({ data }: { data: LinePoint[] }) {
               y={y + 4}
               textAnchor="end"
               fontSize="9"
-              fill="rgba(255,255,255,0.3)"
+              fill="currentColor"
+              fillOpacity="0.35"
             >
               {val}
             </text>
@@ -71,7 +73,8 @@ export function LineChart({ data }: { data: LinePoint[] }) {
       <polyline
         points={points.join(" ")}
         fill="none"
-        stroke="rgba(255,255,255,0.8)"
+        stroke="currentColor"
+        strokeOpacity="0.8"
         strokeWidth="1.5"
         strokeLinejoin="round"
       />
@@ -80,7 +83,7 @@ export function LineChart({ data }: { data: LinePoint[] }) {
         const x = PAD.left + (i / (data.length - 1)) * plotW;
         const y = PAD.top + norm(d.count, 0, maxY, plotH, 0);
         return d.count > 0 ? (
-          <circle key={i} cx={x} cy={y} r="2.5" fill="white" />
+          <circle key={i} cx={x} cy={y} r="2.5" fill="currentColor" />
         ) : null;
       })}
       {/* X labels */}
@@ -98,7 +101,8 @@ export function LineChart({ data }: { data: LinePoint[] }) {
             y={H - 4}
             textAnchor="middle"
             fontSize="9"
-            fill="rgba(255,255,255,0.3)"
+            fill="currentColor"
+            fillOpacity="0.35"
           >
             {label}
           </text>
@@ -128,7 +132,8 @@ export function BarChart({ data }: { data: BarPoint[] }) {
               y1={y}
               x2={W - PAD.right}
               y2={y}
-              stroke="rgba(255,255,255,0.07)"
+              stroke="currentColor"
+              strokeOpacity="0.1"
               strokeWidth="1"
             />
             <text
@@ -136,7 +141,8 @@ export function BarChart({ data }: { data: BarPoint[] }) {
               y={y + 4}
               textAnchor="end"
               fontSize="9"
-              fill="rgba(255,255,255,0.3)"
+              fill="currentColor"
+              fillOpacity="0.35"
             >
               {val}
             </text>
@@ -156,14 +162,16 @@ export function BarChart({ data }: { data: BarPoint[] }) {
               y={y}
               width={barW}
               height={barH}
-              fill="rgba(255,255,255,0.15)"
+              fill="currentColor"
+              fillOpacity="0.2"
             />
             <text
               x={x + barW / 2}
               y={H - 4}
               textAnchor="middle"
               fontSize="9"
-              fill="rgba(255,255,255,0.4)"
+              fill="currentColor"
+              fillOpacity="0.45"
             >
               {d.label.slice(0, 5)}
             </text>

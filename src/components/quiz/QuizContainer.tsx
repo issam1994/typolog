@@ -2,19 +2,24 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { submitQuiz } from "@/app/quiz/actions";
-import type { Question, Trait, LikertOption } from "@/types/shared/quiz";
+import { submitQuiz } from "@/app/tests/[slug]/quiz/actions";
+import type { Question, LikertOption } from "@/types/shared/quiz";
 
 type Props = {
+  testSlug: string;
   questions: Question[];
-  traits: Trait[];
-  options: LikertOption[];
+  likertOptions: LikertOption[];
 };
 
-export default function QuizContainer({ questions, traits, options }: Props) {
+export default function QuizContainer({
+  testSlug,
+  questions,
+  likertOptions,
+}: Props) {
   const router = useRouter();
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [submitting, setSubmitting] = useState(false);
 
   const question = questions[current];
   const total = questions.length;
@@ -35,47 +40,29 @@ export default function QuizContainer({ questions, traits, options }: Props) {
   }
 
   async function submit() {
-    const traitScores: Record<string, number> = {};
-    const traitCounts: Record<string, number> = {};
-
-    traits.forEach(({ id }) => {
-      traitScores[id] = 0;
-      traitCounts[id] = 0;
-    });
-
-    questions.forEach((q) => {
-      const val = answers[q.id];
-      if (val !== undefined) {
-        traitScores[q.trait_id] = (traitScores[q.trait_id] ?? 0) + val;
-        traitCounts[q.trait_id] = (traitCounts[q.trait_id] ?? 0) + 1;
-      }
-    });
-
-    const maxPerQuestion = options[options.length - 1].value;
-    const percentages: Record<string, number> = {};
-    traits.forEach(({ id }) => {
-      const count = traitCounts[id] ?? 0;
-      const score = traitScores[id] ?? 0;
-      percentages[id] =
-        count > 0 ? Math.round((score / (count * maxPerQuestion)) * 100) : 0;
-    });
-
-    localStorage.setItem("typolog_results", JSON.stringify(percentages));
-    await submitQuiz(answers, percentages);
-    router.push("/results");
+    setSubmitting(true);
+    try {
+      const { submissionId } = await submitQuiz(testSlug, answers);
+      localStorage.setItem(`typolog_submission:${testSlug}`, submissionId);
+      router.push(`/tests/${testSlug}/results?submission=${submissionId}`);
+    } catch {
+      setSubmitting(false);
+    }
   }
+
+  const isForcedChoice = question.kind === "forced_choice";
 
   return (
     <div className="min-h-screen flex flex-col pt-20">
-      <div className="w-full h-px bg-white/10">
+      <div className="w-full h-px bg-border">
         <div
-          className="h-px bg-white transition-all duration-300"
+          className="h-px bg-foreground transition-all duration-300"
           style={{ width: `${progress}%` }}
         />
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-16">
-        <p className="text-xs text-white/40 tracking-widest uppercase mb-10">
+        <p className="text-xs text-muted tracking-widest uppercase mb-10">
           {current + 1} / {total}
         </p>
 
@@ -83,27 +70,45 @@ export default function QuizContainer({ questions, traits, options }: Props) {
           {question.text}
         </h2>
 
-        <div className="flex flex-col gap-3 w-full max-w-sm">
-          {options.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => selectAnswer(opt.value)}
-              className={`w-full px-5 py-3 text-sm border transition-colors text-left ${
-                selectedValue === opt.value
-                  ? "bg-white text-black border-white"
-                  : "border-white/20 text-white/70 hover:border-white/60 hover:text-white"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+        {isForcedChoice ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg">
+            {question.options.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => selectAnswer(opt.value)}
+                className={`w-full px-5 py-4 text-sm border transition-colors text-left ${
+                  selectedValue === opt.value
+                    ? "bg-foreground text-background border-foreground"
+                    : "border-border text-muted hover:border-foreground/60 hover:text-foreground"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3 w-full max-w-sm">
+            {likertOptions.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => selectAnswer(opt.value)}
+                className={`w-full px-5 py-3 text-sm border transition-colors text-left ${
+                  selectedValue === opt.value
+                    ? "bg-foreground text-background border-foreground"
+                    : "border-border text-muted hover:border-foreground/60 hover:text-foreground"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="flex gap-4 mt-12">
           {current > 0 && (
             <button
               onClick={goPrev}
-              className="px-6 py-3 text-sm border border-white/20 text-white/60 hover:border-white/60 hover:text-white transition-colors"
+              className="px-6 py-3 text-sm border border-border text-muted hover:border-foreground/60 hover:text-foreground transition-colors"
             >
               Back
             </button>
@@ -111,16 +116,16 @@ export default function QuizContainer({ questions, traits, options }: Props) {
           {isLast ? (
             <button
               onClick={submit}
-              disabled={selectedValue === undefined}
-              className="px-6 py-3 text-sm bg-white text-black hover:bg-white/90 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              disabled={selectedValue === undefined || submitting}
+              className="px-6 py-3 text-sm bg-foreground text-background hover:bg-foreground/90 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
-              See Results
+              {submitting ? "Submitting…" : "See Results"}
             </button>
           ) : (
             <button
               onClick={goNext}
               disabled={selectedValue === undefined}
-              className="px-6 py-3 text-sm bg-white text-black hover:bg-white/90 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              className="px-6 py-3 text-sm bg-foreground text-background hover:bg-foreground/90 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
               Next
             </button>

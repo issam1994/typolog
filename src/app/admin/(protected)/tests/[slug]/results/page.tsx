@@ -1,20 +1,28 @@
 import Link from "next/link";
-import { getSubmissions, getAllTraits } from "@/lib/db/queries";
+import { notFound } from "next/navigation";
+import { getTest, getAllTraits, getSubmissions } from "@/lib/db/queries";
 import { requireAdmin } from "@/lib/db/auth";
 
-export const metadata = { title: "Results — Typolog Admin" };
-
 type Props = {
+  params: Promise<{ slug: string }>;
   searchParams: Promise<{ before?: string }>;
 };
 
-export default async function ResultsPage({ searchParams }: Props) {
+export async function generateMetadata() {
+  return { title: `Results — Typolog Admin` };
+}
+
+export default async function TestResultsPage({ params, searchParams }: Props) {
   await requireAdmin();
+  const { slug } = await params;
   const { before } = await searchParams;
 
+  const test = await getTest(slug);
+  if (!test) notFound();
+
   const [submissions, traits] = await Promise.all([
-    getSubmissions({ before, limit: 50 }),
-    getAllTraits(),
+    getSubmissions({ before, limit: 50, testId: test.id }),
+    getAllTraits(test.id),
   ]);
 
   const older =
@@ -23,13 +31,13 @@ export default async function ResultsPage({ searchParams }: Props) {
       : null;
 
   return (
-    <div className="px-8 py-8">
+    <div className="px-8 py-8 max-w-5xl mx-auto">
       <div className="flex items-baseline justify-between mb-8">
         <h1 className="text-xl font-semibold tracking-tight">Results</h1>
         <a
-          href="/admin/results/export"
+          href={`/admin/tests/${slug}/results/export`}
           download
-          className="text-xs text-muted hover:text-white transition-colors"
+          className="text-xs text-muted hover:text-foreground transition-colors"
         >
           Export CSV
         </a>
@@ -50,10 +58,14 @@ export default async function ResultsPage({ searchParams }: Props) {
                     <th
                       key={t.id}
                       className="text-left py-2 pr-4 text-xs text-muted tracking-widest uppercase font-normal"
+                      title={t.label}
                     >
-                      {t.label.slice(0, 4)}
+                      {t.slug.toUpperCase()}
                     </th>
                   ))}
+                  <th className="text-left py-2 pr-4 text-xs text-muted tracking-widest uppercase font-normal">
+                    Type
+                  </th>
                   <th />
                 </tr>
               </thead>
@@ -63,7 +75,7 @@ export default async function ResultsPage({ searchParams }: Props) {
                     key={s.id}
                     className="border-b border-border/50 hover:bg-accent/30 transition-colors"
                   >
-                    <td className="py-3 pr-6 text-white/70 whitespace-nowrap">
+                    <td className="py-3 pr-6 text-foreground/70 whitespace-nowrap">
                       {new Date(s.submitted_at).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
@@ -77,14 +89,17 @@ export default async function ResultsPage({ searchParams }: Props) {
                       </span>
                     </td>
                     {traits.map((t) => (
-                      <td key={t.id} className="py-3 pr-4 text-white/70">
-                        {(s.scores as Record<string, number>)[t.id] ?? "—"}%
+                      <td key={t.id} className="py-3 pr-4 text-foreground/70">
+                        {(s.scores as Record<string, number>)[t.slug] ?? "—"}%
                       </td>
                     ))}
+                    <td className="py-3 pr-4 text-foreground/70 text-xs">
+                      {s.archetype_code ?? "—"}
+                    </td>
                     <td className="py-3 text-right">
                       <Link
-                        href={`/admin/results/${s.id}`}
-                        className="text-xs text-muted hover:text-white transition-colors"
+                        href={`/admin/tests/${slug}/results/${s.id}`}
+                        className="text-xs text-muted hover:text-foreground transition-colors"
                       >
                         View →
                       </Link>
@@ -98,8 +113,8 @@ export default async function ResultsPage({ searchParams }: Props) {
           {older && (
             <div className="mt-6 text-center">
               <Link
-                href={`/admin/results?before=${encodeURIComponent(older)}`}
-                className="text-xs text-muted hover:text-white transition-colors"
+                href={`/admin/tests/${slug}/results?before=${encodeURIComponent(older)}`}
+                className="text-xs text-muted hover:text-foreground transition-colors"
               >
                 Load older →
               </Link>

@@ -36,7 +36,7 @@ export default async function LoginPage({ searchParams }: Props) {
               type="email"
               required
               autoComplete="email"
-              className="bg-transparent border border-border px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/60 transition-colors"
+              className="bg-transparent border border-border px-4 py-3 text-sm text-foreground placeholder-foreground/30 focus:outline-none focus:border-foreground/60 transition-colors"
             />
           </div>
 
@@ -53,13 +53,13 @@ export default async function LoginPage({ searchParams }: Props) {
               type="password"
               required
               autoComplete="current-password"
-              className="bg-transparent border border-border px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/60 transition-colors"
+              className="bg-transparent border border-border px-4 py-3 text-sm text-foreground placeholder-foreground/30 focus:outline-none focus:border-foreground/60 transition-colors"
             />
           </div>
 
           <button
             type="submit"
-            className="mt-2 px-6 py-3 bg-white text-black text-sm font-medium hover:bg-white/90 transition-colors"
+            className="mt-2 px-6 py-3 bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
           >
             Sign In
           </button>

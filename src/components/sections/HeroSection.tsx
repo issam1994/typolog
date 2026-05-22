@@ -6,15 +6,15 @@ export default function HeroSection() {
       <h1 className="text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tight leading-tight max-w-3xl">
         Discover Who You Really Are.
       </h1>
-      <p className="mt-6 text-lg sm:text-xl text-white/60 max-w-xl leading-relaxed">
-        A five-minute personality assessment rooted in psychology. Understand
-        your core traits and see yourself more clearly.
+      <p className="mt-6 text-lg sm:text-xl text-muted max-w-xl leading-relaxed">
+        Science-backed personality assessments. Understand yourself through Big
+        Five, MBTI, Enneagram, and Cognitive Functions.
       </p>
       <Link
-        href="/quiz"
-        className="mt-10 inline-block px-8 py-4 bg-white text-black text-sm font-medium hover:bg-white/90 transition-colors"
+        href="/tests"
+        className="mt-10 inline-block px-8 py-4 bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
       >
-        Take the Test
+        Explore Tests
       </Link>
     </section>
   );

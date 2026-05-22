@@ -15,14 +15,12 @@ const values = [
 
 export default function ValuesSection() {
   return (
-    <section className="border-t border-white/10 py-24 px-6">
+    <section className="border-t border-border py-24 px-6">
       <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-12">
         {values.map((value) => (
           <div key={value.title}>
             <h3 className="text-lg font-semibold mb-3">{value.title}</h3>
-            <p className="text-white/50 text-sm leading-relaxed">
-              {value.body}
-            </p>
+            <p className="text-muted text-sm leading-relaxed">{value.body}</p>
           </div>
         ))}
       </div>

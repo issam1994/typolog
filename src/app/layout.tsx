@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../styles/tailwind/globals.css";
 import { ThemeProvider } from "./theme-provider";
+import TopProgressBar from "@/components/layout/TopProgressBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,7 +30,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} min-h-full flex flex-col antialiased`}
       >
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <TopProgressBar />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

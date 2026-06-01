@@ -20,6 +20,7 @@ export default function QuizContainer({
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const question = questions[current];
   const total = questions.length;
@@ -41,11 +42,14 @@ export default function QuizContainer({
 
   async function submit() {
     setSubmitting(true);
+    setSubmitError(null);
     try {
       const { submissionId } = await submitQuiz(testSlug, answers);
       localStorage.setItem(`typolog_submission:${testSlug}`, submissionId);
       router.push(`/tests/${testSlug}/results?submission=${submissionId}`);
-    } catch {
+    } catch (err) {
+      console.error("Quiz submission failed", err);
+      setSubmitError("Couldn't submit — please try again.");
       setSubmitting(false);
     }
   }
@@ -102,6 +106,15 @@ export default function QuizContainer({
               </button>
             ))}
           </div>
+        )}
+
+        {submitError && (
+          <p
+            role="alert"
+            className="mt-8 text-sm text-[color:var(--color-danger)]"
+          >
+            {submitError}
+          </p>
         )}
 
         <div className="flex gap-4 mt-12">

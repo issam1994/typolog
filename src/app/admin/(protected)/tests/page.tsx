@@ -126,6 +126,7 @@ export default async function TestsPage({ searchParams }: Props) {
               <option value="mbti_dichotomy">MBTI Dichotomy</option>
               <option value="enneagram_dominant">Enneagram Dominant</option>
               <option value="cognitive_stack">Cognitive Stack</option>
+              <option value="psychosophy_stack">Psychosophy Stack</option>
             </select>
             <select
               name="result_template"
@@ -136,6 +137,7 @@ export default async function TestsPage({ searchParams }: Props) {
               <option value="mbti_code">MBTI Code</option>
               <option value="enneagram_type">Enneagram Type</option>
               <option value="cognitive_stack">Cognitive Stack</option>
+              <option value="psychosophy_stack">Psychosophy Stack</option>
             </select>
           </div>
           <div className="flex gap-3">

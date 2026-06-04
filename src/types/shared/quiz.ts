@@ -3,12 +3,14 @@ export type ScoringStrategy =
   | "likert_percentage"
   | "mbti_dichotomy"
   | "enneagram_dominant"
-  | "cognitive_stack";
+  | "cognitive_stack"
+  | "psychosophy_stack";
 export type ResultTemplate =
   | "bars"
   | "mbti_code"
   | "enneagram_type"
-  | "cognitive_stack";
+  | "cognitive_stack"
+  | "psychosophy_stack";
 
 export type Test = {
   id: string;

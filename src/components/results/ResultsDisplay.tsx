@@ -5,6 +5,7 @@ import {
   MbtiCodeTemplate,
   EnneagramTypeTemplate,
   CognitiveStackTemplate,
+  PsychosophyStackTemplate,
   type ResultTemplateProps,
 } from "./templates";
 
@@ -13,6 +14,7 @@ const TEMPLATES: Record<ResultTemplate, ComponentType<ResultTemplateProps>> = {
   mbti_code: MbtiCodeTemplate,
   enneagram_type: EnneagramTypeTemplate,
   cognitive_stack: CognitiveStackTemplate,
+  psychosophy_stack: PsychosophyStackTemplate,
 };
 
 export default function ResultsDisplay(props: ResultTemplateProps) {

@@ -2,7 +2,11 @@ import { notFound } from "next/navigation";
 import { getTest, getArchetypes } from "@/lib/db/queries";
 import { requireAdmin } from "@/lib/db/auth";
 import DeleteButton from "@/components/admin/DeleteButton";
-import { createArchetype, updateArchetype, deleteArchetype } from "./actions";
+import {
+  createArchetypeAction,
+  deleteArchetypeAction,
+  updateArchetypeAction,
+} from "./actions";
 import type { Archetype } from "@/types/shared/quiz";
 
 export const metadata = { title: "Archetypes — Typolog Admin" };
@@ -49,7 +53,7 @@ export default async function ArchetypesPage({ params, searchParams }: Props) {
         <h2 className="text-xs text-muted tracking-widest uppercase mb-4">
           Add Archetype
         </h2>
-        <form action={createArchetype} className="space-y-3 max-w-xl">
+        <form action={createArchetypeAction} className="space-y-3 max-w-xl">
           <input type="hidden" name="test_id" value={test.id} />
           <input type="hidden" name="test_slug" value={slug} />
           <div className="grid grid-cols-2 gap-3">
@@ -110,7 +114,7 @@ function ArchetypeRow({
       </summary>
 
       <div className="px-4 pb-4 pt-2 border-t border-border/50">
-        <form action={updateArchetype} className="space-y-3">
+        <form action={updateArchetypeAction} className="space-y-3">
           <input type="hidden" name="id" value={archetype.id} />
           <input type="hidden" name="test_slug" value={testSlug} />
           <div className="grid grid-cols-2 gap-3">
@@ -168,7 +172,7 @@ function ArchetypeRow({
             </button>
           </div>
         </form>
-        <DeleteButton id={archetype.id} action={deleteArchetype} />
+        <DeleteButton id={archetype.id} action={deleteArchetypeAction} />
       </div>
     </details>
   );

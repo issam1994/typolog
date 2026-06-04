@@ -1,7 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/db/supabase-server";
-import { getTestBundle } from "@/lib/db/queries";
+import { createSubmission, getTestBundle } from "@/lib/db/queries";
 import { getScorer } from "@/lib/scoring";
 
 export async function submitQuiz(
@@ -21,18 +20,11 @@ export async function submitQuiz(
     likertMaxValue: 5,
   });
 
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("submissions")
-    .insert({
-      test_id: test.id,
-      answers,
-      scores,
-      archetype_code: archetypeCode,
-    })
-    .select("id")
-    .single();
-
-  if (error) throw error;
-  return { submissionId: data.id, archetypeCode };
+  const { id } = await createSubmission(
+    test.id,
+    answers,
+    scores,
+    archetypeCode,
+  );
+  return { submissionId: id, archetypeCode };
 }

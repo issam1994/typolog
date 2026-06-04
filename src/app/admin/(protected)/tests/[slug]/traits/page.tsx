@@ -2,7 +2,11 @@ import { notFound } from "next/navigation";
 import { getTest, getAllTraits } from "@/lib/db/queries";
 import { requireAdmin } from "@/lib/db/auth";
 import DeleteButton from "@/components/admin/DeleteButton";
-import { createTrait, updateTrait, deleteTrait } from "./actions";
+import {
+  createTraitAction,
+  deleteTraitAction,
+  updateTraitAction,
+} from "./actions";
 import type { Trait } from "@/types/shared/quiz";
 
 export const metadata = { title: "Traits — Typolog Admin" };
@@ -52,7 +56,7 @@ export default async function TraitsPage({ params, searchParams }: Props) {
         <h2 className="text-xs text-muted tracking-widest uppercase mb-4">
           Add Trait
         </h2>
-        <form action={createTrait} className="space-y-3 max-w-xl">
+        <form action={createTraitAction} className="space-y-3 max-w-xl">
           <input type="hidden" name="test_id" value={test.id} />
           <input type="hidden" name="test_slug" value={slug} />
           <div className="grid grid-cols-2 gap-3">
@@ -120,7 +124,7 @@ function TraitRow({
       </summary>
 
       <div className="px-4 pb-4 pt-2 border-t border-border/50">
-        <form action={updateTrait} className="space-y-3">
+        <form action={updateTraitAction} className="space-y-3">
           <input type="hidden" name="id" value={trait.id} />
           <input type="hidden" name="test_slug" value={testSlug} />
 
@@ -171,7 +175,7 @@ function TraitRow({
           </div>
         </form>
 
-        <DeleteButton id={trait.id} action={deleteTrait} />
+        <DeleteButton id={trait.id} action={deleteTraitAction} />
       </div>
     </details>
   );

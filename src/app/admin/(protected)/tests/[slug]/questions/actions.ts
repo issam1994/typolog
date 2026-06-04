@@ -1,11 +1,17 @@
 "use server";
 
 import { requireAdmin } from "@/lib/db/auth";
-import { createClient } from "@/lib/db/supabase-server";
+import {
+  createQuestion,
+  getQuestionKind,
+  softDeleteQuestion,
+  swapQuestionOrder,
+  updateQuestion,
+} from "@/lib/db/queries";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-export async function createQuestion(formData: FormData) {
+export async function createQuestionAction(formData: FormData) {
   await requireAdmin();
   const test_id = formData.get("test_id") as string;
   const test_slug = formData.get("test_slug") as string;
@@ -16,18 +22,6 @@ export async function createQuestion(formData: FormData) {
     redirect(
       `/admin/tests/${test_slug}/questions?error=Missing+required+fields`,
     );
-
-  const supabase = await createClient();
-
-  const { data: last } = await supabase
-    .from("questions")
-    .select("sort_order")
-    .eq("test_id", test_id)
-    .is("deleted_at", null)
-    .order("sort_order", { ascending: false })
-    .limit(1)
-    .single();
-  const nextOrder = (last?.sort_order ?? 0) + 1;
 
   if (kind === "forced_choice") {
     const option0Label = (formData.get("option_0_label") as string)?.trim();
@@ -40,32 +34,18 @@ export async function createQuestion(formData: FormData) {
         `/admin/tests/${test_slug}/questions?error=Forced+choice+questions+require+two+options+with+traits`,
       );
 
-    const { data: question, error } = await supabase
-      .from("questions")
-      .insert({ test_id, text, kind: "forced_choice", sort_order: nextOrder })
-      .select("id")
-      .single();
+    const { error } = await createQuestion(test_id, {
+      kind: "forced_choice",
+      text,
+      options: [
+        { label: option0Label, traitId: option0TraitId },
+        { label: option1Label, traitId: option1TraitId },
+      ],
+    });
     if (error)
       redirect(
-        `/admin/tests/${test_slug}/questions?error=${encodeURIComponent(error.message)}`,
+        `/admin/tests/${test_slug}/questions?error=${encodeURIComponent(error)}`,
       );
-
-    await supabase.from("question_options").insert([
-      {
-        question_id: question.id,
-        label: option0Label,
-        value: 0,
-        trait_id: option0TraitId,
-        sort_order: 1,
-      },
-      {
-        question_id: question.id,
-        label: option1Label,
-        value: 1,
-        trait_id: option1TraitId,
-        sort_order: 2,
-      },
-    ]);
   } else {
     const trait_id = (formData.get("trait_id") as string) || null;
     const reverse_keyed = formData.get("reverse_keyed") === "true";
@@ -75,17 +55,15 @@ export async function createQuestion(formData: FormData) {
         `/admin/tests/${test_slug}/questions?error=Likert+questions+require+a+trait`,
       );
 
-    const { error } = await supabase.from("questions").insert({
-      test_id,
-      text,
+    const { error } = await createQuestion(test_id, {
       kind: "likert",
-      trait_id,
-      reverse_keyed,
-      sort_order: nextOrder,
+      text,
+      traitId: trait_id,
+      reverseKeyed: reverse_keyed,
     });
     if (error)
       redirect(
-        `/admin/tests/${test_slug}/questions?error=${encodeURIComponent(error.message)}`,
+        `/admin/tests/${test_slug}/questions?error=${encodeURIComponent(error)}`,
       );
   }
 
@@ -93,7 +71,7 @@ export async function createQuestion(formData: FormData) {
   redirect(`/admin/tests/${test_slug}/questions`);
 }
 
-export async function updateQuestion(formData: FormData) {
+export async function updateQuestionAction(formData: FormData) {
   await requireAdmin();
   const id = formData.get("id") as string;
   const test_slug = formData.get("test_slug") as string;
@@ -102,113 +80,54 @@ export async function updateQuestion(formData: FormData) {
   if (!text)
     redirect(`/admin/tests/${test_slug}/questions?error=Missing+question+text`);
 
-  const supabase = await createClient();
+  const kind = await getQuestionKind(id);
 
-  const { data: question } = await supabase
-    .from("questions")
-    .select("kind")
-    .eq("id", id)
-    .single();
+  if (kind === "forced_choice") {
+    const options = [0, 1]
+      .map((i) => ({
+        id: formData.get(`option_${i}_id`) as string,
+        label: (formData.get(`option_${i}_label`) as string)?.trim(),
+        traitId: (formData.get(`option_${i}_trait_id`) as string) || null,
+      }))
+      .filter((o) => o.id && o.label);
 
-  if (question?.kind === "forced_choice") {
-    await supabase.from("questions").update({ text }).eq("id", id);
-
-    for (const i of [0, 1]) {
-      const optId = formData.get(`option_${i}_id`) as string;
-      const optLabel = (formData.get(`option_${i}_label`) as string)?.trim();
-      const optTraitId = formData.get(`option_${i}_trait_id`) as string;
-      if (optId && optLabel) {
-        await supabase
-          .from("question_options")
-          .update({
-            label: optLabel,
-            trait_id: optTraitId || null,
-          })
-          .eq("id", optId);
-      }
-    }
+    await updateQuestion(id, {
+      kind: "forced_choice",
+      text,
+      options,
+    });
   } else {
     const trait_id = (formData.get("trait_id") as string) || null;
     const reverse_keyed = formData.get("reverse_keyed") === "true";
-    await supabase
-      .from("questions")
-      .update({ text, trait_id, reverse_keyed })
-      .eq("id", id);
+    await updateQuestion(id, {
+      kind: "likert",
+      text,
+      traitId: trait_id,
+      reverseKeyed: reverse_keyed,
+    });
   }
 
   revalidatePath(`/admin/tests/${test_slug}/questions`);
   redirect(`/admin/tests/${test_slug}/questions`);
 }
 
-export async function deleteQuestion(formData: FormData) {
+export async function deleteQuestionAction(formData: FormData) {
   await requireAdmin();
   const id = formData.get("id") as string;
-  const supabase = await createClient();
 
-  const { data: question } = await supabase
-    .from("questions")
-    .select("test_id")
-    .eq("id", id)
-    .single();
-  const { data: test } = await supabase
-    .from("tests")
-    .select("slug")
-    .eq("id", question?.test_id)
-    .single();
+  const { testSlug } = await softDeleteQuestion(id);
 
-  await supabase
-    .from("questions")
-    .update({ deleted_at: new Date().toISOString() })
-    .eq("id", id);
-
-  revalidatePath(`/admin/tests/${test?.slug}/questions`);
-  redirect(`/admin/tests/${test?.slug}/questions`);
+  revalidatePath(`/admin/tests/${testSlug}/questions`);
+  redirect(`/admin/tests/${testSlug}/questions`);
 }
 
-export async function moveQuestion(formData: FormData) {
+export async function moveQuestionAction(formData: FormData) {
   await requireAdmin();
   const id = formData.get("id") as string;
   const direction = formData.get("direction") as "up" | "down";
   const test_slug = formData.get("test_slug") as string;
 
-  const supabase = await createClient();
-  const { data: current } = await supabase
-    .from("questions")
-    .select("sort_order, test_id")
-    .eq("id", id)
-    .single();
-  if (!current) redirect(`/admin/tests/${test_slug}/questions`);
-
-  const siblingQuery = supabase
-    .from("questions")
-    .select("id, sort_order")
-    .eq("test_id", current.test_id)
-    .is("deleted_at", null)
-    .limit(1);
-
-  const { data: sibling } =
-    direction === "up"
-      ? await siblingQuery
-          .lt("sort_order", current.sort_order)
-          .order("sort_order", { ascending: false })
-          .single()
-      : await siblingQuery
-          .gt("sort_order", current.sort_order)
-          .order("sort_order", { ascending: true })
-          .single();
-
-  if (!sibling) redirect(`/admin/tests/${test_slug}/questions`);
-
-  await Promise.all([
-    supabase
-      .from("questions")
-      .update({ sort_order: sibling.sort_order })
-      .eq("id", id),
-    supabase
-      .from("questions")
-      .update({ sort_order: current.sort_order })
-      .eq("id", sibling.id),
-  ]);
+  await swapQuestionOrder(id, direction);
 
   revalidatePath(`/admin/tests/${test_slug}/questions`);
   redirect(`/admin/tests/${test_slug}/questions`);

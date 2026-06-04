@@ -3,10 +3,10 @@ import { getTest, getAllQuestions, getAllTraits } from "@/lib/db/queries";
 import { requireAdmin } from "@/lib/db/auth";
 import DeleteButton from "@/components/admin/DeleteButton";
 import {
-  createQuestion,
-  updateQuestion,
-  deleteQuestion,
-  moveQuestion,
+  createQuestionAction,
+  deleteQuestionAction,
+  moveQuestionAction,
+  updateQuestionAction,
 } from "./actions";
 import type { Question, Trait } from "@/types/shared/quiz";
 
@@ -141,7 +141,7 @@ function QuestionRow({
     <details className="group border border-border/50 hover:border-border transition-colors">
       <summary className="flex items-center gap-3 px-4 py-3 cursor-pointer list-none">
         <span className="flex gap-1 shrink-0">
-          <form action={moveQuestion}>
+          <form action={moveQuestionAction}>
             <input type="hidden" name="id" value={question.id} />
             <input type="hidden" name="direction" value="up" />
             <input type="hidden" name="test_slug" value={testSlug} />
@@ -154,7 +154,7 @@ function QuestionRow({
               ↑
             </button>
           </form>
-          <form action={moveQuestion}>
+          <form action={moveQuestionAction}>
             <input type="hidden" name="id" value={question.id} />
             <input type="hidden" name="direction" value="down" />
             <input type="hidden" name="test_slug" value={testSlug} />
@@ -201,7 +201,7 @@ function EditQuestionForm({
 }) {
   return (
     <div className="space-y-3">
-      <form action={updateQuestion} className="space-y-3">
+      <form action={updateQuestionAction} className="space-y-3">
         <input type="hidden" name="id" value={question.id} />
         <input type="hidden" name="test_slug" value={testSlug} />
         <textarea
@@ -275,7 +275,7 @@ function EditQuestionForm({
         </button>
       </form>
 
-      <DeleteButton id={question.id} action={deleteQuestion} />
+      <DeleteButton id={question.id} action={deleteQuestionAction} />
     </div>
   );
 }
@@ -296,7 +296,7 @@ function AddQuestionForm({
       <h2 className="text-xs text-muted tracking-widest uppercase mb-4">
         Add Question
       </h2>
-      <form action={createQuestion} className="space-y-4 max-w-xl">
+      <form action={createQuestionAction} className="space-y-4 max-w-xl">
         <input type="hidden" name="test_id" value={testId} />
         <input type="hidden" name="test_slug" value={testSlug} />
 

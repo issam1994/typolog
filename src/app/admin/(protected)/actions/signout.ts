@@ -1,10 +1,9 @@
 "use server";
 
-import { createClient } from "@/lib/db/supabase-server";
+import { signOut } from "@/lib/db/auth";
 import { redirect } from "next/navigation";
 
 export async function signOutAction() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
+  await signOut();
   redirect("/admin/login");
 }

@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { getTest, getAllTraits, getOverviewStats } from "@/lib/db/queries";
 import { requireAdmin } from "@/lib/db/auth";
 import { LineChart, BarChart } from "@/components/admin/Chart";
-import { updateTest } from "../actions";
+import { updateTestAction } from "../actions";
 
 export const metadata = { title: "Test Overview — Typolog Admin" };
 
@@ -68,7 +68,7 @@ export default async function TestOverviewPage({ params }: Props) {
         <h2 className="text-xs text-muted tracking-widest uppercase mb-4">
           Edit Test
         </h2>
-        <form action={updateTest} className="space-y-3 max-w-xl">
+        <form action={updateTestAction} className="space-y-3 max-w-xl">
           <input type="hidden" name="id" value={test.id} />
           <input
             name="name"

@@ -1,11 +1,11 @@
 "use server";
 
 import { requireAdmin } from "@/lib/db/auth";
-import { createClient } from "@/lib/db/supabase-server";
+import { createTest, setTestPublished, updateTest } from "@/lib/db/queries";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-export async function createTest(formData: FormData) {
+export async function createTestAction(formData: FormData) {
   await requireAdmin();
   const name = (formData.get("name") as string).trim();
   const slug = (formData.get("slug") as string).trim();
@@ -23,8 +23,7 @@ export async function createTest(formData: FormData) {
   if (!name || !slug || !question_kind || !scoring_strategy || !result_template)
     redirect("/admin/tests?error=Missing+fields");
 
-  const supabase = await createClient();
-  const { error } = await supabase.from("tests").insert({
+  const { error } = await createTest({
     name,
     slug,
     tagline,
@@ -35,14 +34,13 @@ export async function createTest(formData: FormData) {
     estimated_minutes: isNaN(estimated_minutes) ? 5 : estimated_minutes,
   });
 
-  if (error)
-    redirect(`/admin/tests?error=${encodeURIComponent(error.message)}`);
+  if (error) redirect(`/admin/tests?error=${encodeURIComponent(error)}`);
 
   revalidatePath("/admin/tests");
   redirect("/admin/tests");
 }
 
-export async function updateTest(formData: FormData) {
+export async function updateTestAction(formData: FormData) {
   await requireAdmin();
   const id = formData.get("id") as string;
   const name = (formData.get("name") as string).trim();
@@ -56,25 +54,15 @@ export async function updateTest(formData: FormData) {
 
   if (!name) redirect("/admin/tests?error=Missing+fields");
 
-  const supabase = await createClient();
-  const { data: test } = await supabase
-    .from("tests")
-    .select("slug")
-    .eq("id", id)
-    .single();
+  const { slug } = await updateTest(id, {
+    name,
+    tagline,
+    description,
+    estimated_minutes: isNaN(estimated_minutes) ? 5 : estimated_minutes,
+  });
 
-  await supabase
-    .from("tests")
-    .update({
-      name,
-      tagline,
-      description,
-      estimated_minutes: isNaN(estimated_minutes) ? 5 : estimated_minutes,
-    })
-    .eq("id", id);
-
-  revalidatePath(`/admin/tests/${test?.slug}`);
-  redirect(`/admin/tests/${test?.slug}`);
+  revalidatePath(`/admin/tests/${slug}`);
+  redirect(`/admin/tests/${slug}`);
 }
 
 export async function togglePublished(formData: FormData) {
@@ -82,8 +70,7 @@ export async function togglePublished(formData: FormData) {
   const id = formData.get("id") as string;
   const is_published = formData.get("is_published") === "true";
 
-  const supabase = await createClient();
-  await supabase.from("tests").update({ is_published }).eq("id", id);
+  await setTestPublished(id, is_published);
 
   revalidatePath("/admin/tests");
   redirect("/admin/tests");

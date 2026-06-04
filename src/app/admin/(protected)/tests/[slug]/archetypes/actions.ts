@@ -1,11 +1,15 @@
 "use server";
 
 import { requireAdmin } from "@/lib/db/auth";
-import { createClient } from "@/lib/db/supabase-server";
+import {
+  createArchetype,
+  deleteArchetype,
+  updateArchetype,
+} from "@/lib/db/queries";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-export async function createArchetype(formData: FormData) {
+export async function createArchetypeAction(formData: FormData) {
   await requireAdmin();
   const test_id = formData.get("test_id") as string;
   const test_slug = formData.get("test_slug") as string;
@@ -20,35 +24,23 @@ export async function createArchetype(formData: FormData) {
       `/admin/tests/${test_slug}/archetypes?error=Missing+required+fields`,
     );
 
-  const supabase = await createClient();
-
-  const { data: last } = await supabase
-    .from("archetypes")
-    .select("sort_order")
-    .eq("test_id", test_id)
-    .order("sort_order", { ascending: false })
-    .limit(1)
-    .single();
-
-  const { error } = await supabase.from("archetypes").insert({
-    test_id,
+  const { error } = await createArchetype(test_id, {
     code,
     label,
     description,
     long_form,
-    sort_order: (last?.sort_order ?? 0) + 1,
   });
 
   if (error)
     redirect(
-      `/admin/tests/${test_slug}/archetypes?error=${encodeURIComponent(error.message)}`,
+      `/admin/tests/${test_slug}/archetypes?error=${encodeURIComponent(error)}`,
     );
 
   revalidatePath(`/admin/tests/${test_slug}/archetypes`);
   redirect(`/admin/tests/${test_slug}/archetypes`);
 }
 
-export async function updateArchetype(formData: FormData) {
+export async function updateArchetypeAction(formData: FormData) {
   await requireAdmin();
   const id = formData.get("id") as string;
   const test_slug = formData.get("test_slug") as string;
@@ -63,34 +55,18 @@ export async function updateArchetype(formData: FormData) {
       `/admin/tests/${test_slug}/archetypes?error=Missing+required+fields`,
     );
 
-  const supabase = await createClient();
-  await supabase
-    .from("archetypes")
-    .update({ code, label, description, long_form })
-    .eq("id", id);
+  await updateArchetype(id, { code, label, description, long_form });
 
   revalidatePath(`/admin/tests/${test_slug}/archetypes`);
   redirect(`/admin/tests/${test_slug}/archetypes`);
 }
 
-export async function deleteArchetype(formData: FormData) {
+export async function deleteArchetypeAction(formData: FormData) {
   await requireAdmin();
   const id = formData.get("id") as string;
-  const supabase = await createClient();
 
-  const { data: archetype } = await supabase
-    .from("archetypes")
-    .select("test_id")
-    .eq("id", id)
-    .single();
-  const { data: test } = await supabase
-    .from("tests")
-    .select("slug")
-    .eq("id", archetype?.test_id)
-    .single();
+  const { testSlug } = await deleteArchetype(id);
 
-  await supabase.from("archetypes").delete().eq("id", id);
-
-  revalidatePath(`/admin/tests/${test?.slug}/archetypes`);
-  redirect(`/admin/tests/${test?.slug}/archetypes`);
+  revalidatePath(`/admin/tests/${testSlug}/archetypes`);
+  redirect(`/admin/tests/${testSlug}/archetypes`);
 }

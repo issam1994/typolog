@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getAllTests } from "@/lib/db/queries";
 import { requireAdmin } from "@/lib/db/auth";
-import { createTest, togglePublished } from "./actions";
+import { createTestAction, togglePublished } from "./actions";
 
 export const metadata = { title: "Tests — Typolog Admin" };
 
@@ -80,7 +80,7 @@ export default async function TestsPage({ searchParams }: Props) {
         <h2 className="text-xs text-muted tracking-widest uppercase mb-4">
           Create Test
         </h2>
-        <form action={createTest} className="space-y-4 max-w-xl">
+        <form action={createTestAction} className="space-y-4 max-w-xl">
           <div className="grid grid-cols-2 gap-3">
             <input
               name="name"

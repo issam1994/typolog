@@ -6,7 +6,7 @@ import type {
   Submission,
   Test,
   Archetype,
-} from "@/types/shared/quiz";
+} from "@/types/quiz";
 import { createClient } from "./supabase-server";
 
 // ─── Tests ────────────────────────────────────────────────────────────────────

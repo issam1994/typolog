@@ -8,7 +8,7 @@ import {
   moveQuestionAction,
   updateQuestionAction,
 } from "./actions";
-import type { Question, Trait } from "@/types/shared/quiz";
+import type { Question, Trait } from "@/types/quiz";
 
 export const metadata = { title: "Questions — Typolog Admin" };
 

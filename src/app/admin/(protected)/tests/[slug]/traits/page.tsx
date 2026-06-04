@@ -7,7 +7,7 @@ import {
   deleteTraitAction,
   updateTraitAction,
 } from "./actions";
-import type { Trait } from "@/types/shared/quiz";
+import type { Trait } from "@/types/quiz";
 
 export const metadata = { title: "Traits — Typolog Admin" };
 

@@ -7,7 +7,7 @@ import {
   deleteArchetypeAction,
   updateArchetypeAction,
 } from "./actions";
-import type { Archetype } from "@/types/shared/quiz";
+import type { Archetype } from "@/types/quiz";
 
 export const metadata = { title: "Archetypes — Typolog Admin" };
 

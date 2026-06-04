@@ -1,4 +1,4 @@
-import type { Test, Trait, ScoreMap, Archetype } from "@/types/shared/quiz";
+import type { Test, Trait, ScoreMap, Archetype } from "@/types/quiz";
 
 export type ResultTemplateProps = {
   test: Test;

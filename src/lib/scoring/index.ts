@@ -1,4 +1,4 @@
-import type { ScoringStrategy } from "@/types/shared/quiz";
+import type { ScoringStrategy } from "@/types/quiz";
 import type { Scorer } from "./types";
 import { likertPercentage } from "./likertPercentage";
 import { mbtiDichotomy } from "./mbtiDichotomy";

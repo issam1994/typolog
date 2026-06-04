@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { submitQuiz } from "@/app/tests/[slug]/quiz/actions";
-import type { Question, LikertOption } from "@/types/shared/quiz";
+import type { Question, LikertOption } from "@/types/quiz";
 
 type Props = {
   testSlug: string;

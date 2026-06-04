@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ResultTemplateProps } from "./types";
-import type { Trait } from "@/types/shared/quiz";
+import type { Trait } from "@/types/quiz";
 
 export default function MbtiCodeTemplate({
   test,

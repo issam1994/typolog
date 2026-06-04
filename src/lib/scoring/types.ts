@@ -4,7 +4,7 @@ import type {
   Question,
   AnswerMap,
   ScoringResult,
-} from "@/types/shared/quiz";
+} from "@/types/quiz";
 
 export type ScoringInput = {
   test: Test;

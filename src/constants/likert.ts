@@ -1,4 +1,4 @@
-import type { LikertOption } from "@/types/shared/quiz";
+import type { LikertOption } from "@/types/quiz";
 
 export const likertOptions: LikertOption[] = [
   { label: "Strongly Disagree", value: 1 },

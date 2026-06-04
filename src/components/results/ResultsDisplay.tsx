@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import type { ResultTemplate } from "@/types/shared/quiz";
+import type { ResultTemplate } from "@/types/quiz";
 import {
   BarsTemplate,
   MbtiCodeTemplate,

@@ -1,13 +1,13 @@
 "use server";
 
 import { requireAdmin } from "@/lib/db/auth";
+import { getQuestionKind } from "@/lib/db/queries";
 import {
   createQuestion,
-  getQuestionKind,
   softDeleteQuestion,
   swapQuestionOrder,
   updateQuestion,
-} from "@/lib/db/queries";
+} from "@/lib/db/mutations";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 

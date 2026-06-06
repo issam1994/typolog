@@ -1,6 +1,7 @@
 "use server";
 
-import { createSubmission, getTestBundle } from "@/lib/db/queries";
+import { getTestBundle } from "@/lib/db/queries";
+import { createSubmission } from "@/lib/db/mutations";
 import { getScorer } from "@/lib/scoring";
 
 export async function submitQuiz(

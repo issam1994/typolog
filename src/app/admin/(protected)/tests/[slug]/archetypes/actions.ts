@@ -5,7 +5,7 @@ import {
   createArchetype,
   deleteArchetype,
   updateArchetype,
-} from "@/lib/db/queries";
+} from "@/lib/db/mutations";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 

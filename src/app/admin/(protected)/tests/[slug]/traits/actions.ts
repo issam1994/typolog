@@ -1,7 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/lib/db/auth";
-import { createTrait, deleteTrait, updateTrait } from "@/lib/db/queries";
+import { createTrait, deleteTrait, updateTrait } from "@/lib/db/mutations";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 

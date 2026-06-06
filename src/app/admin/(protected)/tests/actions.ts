@@ -1,7 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/lib/db/auth";
-import { createTest, setTestPublished, updateTest } from "@/lib/db/queries";
+import { createTest, setTestPublished, updateTest } from "@/lib/db/mutations";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 

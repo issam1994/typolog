@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { getTest, getAllTraits, getOverviewStats } from "@/lib/db/queries";
 import { requireAdmin } from "@/lib/db/auth";
 import { LineChart, BarChart } from "@/components/admin/Chart";
-import { updateTestAction } from "../actions";
+import { updateTestAction } from "@/app/admin/(protected)/tests/actions";
 
 export const metadata = { title: "Test Overview — Typolog Admin" };
 

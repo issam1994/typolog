@@ -1,6 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+/** Server-side Supabase client returned by {@link createClient}. */
+export type DbClient = Awaited<ReturnType<typeof createClient>>;
+
 export async function createClient() {
   const cookieStore = await cookies();
 

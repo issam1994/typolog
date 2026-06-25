@@ -1,4 +1,5 @@
 import { createClient } from "../supabase-server";
+import { nextSortOrder, resolveTestSlug } from "./helpers";
 
 export type ForcedChoiceOption = { label: string; traitId: string };
 
@@ -16,15 +17,9 @@ export async function createQuestion(
 ): Promise<{ error: string | null }> {
   const supabase = await createClient();
 
-  const { data: last } = await supabase
-    .from("questions")
-    .select("sort_order")
-    .eq("test_id", testId)
-    .is("deleted_at", null)
-    .order("sort_order", { ascending: false })
-    .limit(1)
-    .single();
-  const nextOrder = (last?.sort_order ?? 0) + 1;
+  const nextOrder = await nextSortOrder(supabase, "questions", testId, {
+    excludeDeleted: true,
+  });
 
   if (input.kind === "forced_choice") {
     const { data: question, error } = await supabase
@@ -112,22 +107,13 @@ export async function softDeleteQuestion(
   id: string,
 ): Promise<{ testSlug: string | null }> {
   const supabase = await createClient();
-  const { data: question } = await supabase
-    .from("questions")
-    .select("test_id")
-    .eq("id", id)
-    .single();
-  const { data: test } = await supabase
-    .from("tests")
-    .select("slug")
-    .eq("id", question?.test_id)
-    .single();
+  const testSlug = await resolveTestSlug(supabase, "questions", id);
 
   await supabase
     .from("questions")
     .update({ deleted_at: new Date().toISOString() })
     .eq("id", id);
-  return { testSlug: test?.slug ?? null };
+  return { testSlug };
 }
 
 export async function swapQuestionOrder(

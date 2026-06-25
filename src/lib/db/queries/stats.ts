@@ -60,17 +60,17 @@ export async function getOverviewStats(
   const dailyCounts = days.map((date) => ({ date, count: dayCounts[date] }));
 
   const traitSums: Record<string, number> = {};
-  const traitCounts2: Record<string, number> = {};
+  const traitCounts: Record<string, number> = {};
   traits.forEach(({ slug }) => {
     traitSums[slug] = 0;
-    traitCounts2[slug] = 0;
+    traitCounts[slug] = 0;
   });
   last30dData.forEach((s) => {
     const scores = s.scores as Record<string, number>;
     Object.entries(scores).forEach(([slugKey, pct]) => {
       if (slugKey in traitSums) {
         traitSums[slugKey] += pct;
-        traitCounts2[slugKey]++;
+        traitCounts[slugKey]++;
       }
     });
   });
@@ -78,8 +78,8 @@ export async function getOverviewStats(
     id: t.id,
     label: t.label,
     average:
-      traitCounts2[t.slug] > 0
-        ? Math.round(traitSums[t.slug] / traitCounts2[t.slug])
+      traitCounts[t.slug] > 0
+        ? Math.round(traitSums[t.slug] / traitCounts[t.slug])
         : 0,
   }));
 

@@ -2,53 +2,50 @@
 
 import { requireAdmin } from "@/lib/db/auth";
 import { createTrait, deleteTrait, updateTrait } from "@/lib/db/mutations";
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { getNullableString, getString } from "@/lib/forms";
+import {
+  redirectWithError,
+  revalidateAndRedirect,
+} from "@/lib/admin/navigation";
+
+const traitsPath = (slug: string) => `/admin/tests/${slug}/traits`;
 
 export async function createTraitAction(formData: FormData) {
   await requireAdmin();
   const test_id = formData.get("test_id") as string;
-  const test_slug = formData.get("test_slug") as string;
-  const slug = (formData.get("slug") as string).trim();
-  const label = (formData.get("label") as string).trim();
-  const description =
-    (formData.get("description") as string | null)?.trim() ?? "";
-  const polarity = (formData.get("polarity") as string | null)?.trim() || null;
+  const path = traitsPath(formData.get("test_slug") as string);
+  const slug = getString(formData, "slug");
+  const label = getString(formData, "label");
 
-  if (!slug || !label)
-    redirect(`/admin/tests/${test_slug}/traits?error=Missing+required+fields`);
+  if (!slug || !label) redirectWithError(path, "Missing required fields");
 
   const { error } = await createTrait(test_id, {
     slug,
     label,
-    description,
-    polarity,
+    description: getString(formData, "description"),
+    polarity: getNullableString(formData, "polarity"),
   });
 
-  if (error)
-    redirect(
-      `/admin/tests/${test_slug}/traits?error=${encodeURIComponent(error)}`,
-    );
+  if (error) redirectWithError(path, error);
 
-  revalidatePath(`/admin/tests/${test_slug}/traits`);
-  redirect(`/admin/tests/${test_slug}/traits`);
+  revalidateAndRedirect(path);
 }
 
 export async function updateTraitAction(formData: FormData) {
   await requireAdmin();
   const id = formData.get("id") as string;
-  const test_slug = formData.get("test_slug") as string;
-  const label = (formData.get("label") as string).trim();
-  const description =
-    (formData.get("description") as string | null)?.trim() ?? "";
-  const polarity = (formData.get("polarity") as string | null)?.trim() || null;
+  const path = traitsPath(formData.get("test_slug") as string);
+  const label = getString(formData, "label");
 
-  if (!label) redirect(`/admin/tests/${test_slug}/traits?error=Missing+label`);
+  if (!label) redirectWithError(path, "Missing label");
 
-  await updateTrait(id, { label, description, polarity });
+  await updateTrait(id, {
+    label,
+    description: getString(formData, "description"),
+    polarity: getNullableString(formData, "polarity"),
+  });
 
-  revalidatePath(`/admin/tests/${test_slug}/traits`);
-  redirect(`/admin/tests/${test_slug}/traits`);
+  revalidateAndRedirect(path);
 }
 
 export async function deleteTraitAction(formData: FormData) {
@@ -56,13 +53,10 @@ export async function deleteTraitAction(formData: FormData) {
   const id = formData.get("id") as string;
 
   const { testSlug, hasQuestions } = await deleteTrait(id);
+  const path = traitsPath(testSlug ?? "");
 
-  if (hasQuestions) {
-    redirect(
-      `/admin/tests/${testSlug}/traits?error=Cannot+delete+a+trait+that+has+questions`,
-    );
-  }
+  if (hasQuestions)
+    redirectWithError(path, "Cannot delete a trait that has questions");
 
-  revalidatePath(`/admin/tests/${testSlug}/traits`);
-  redirect(`/admin/tests/${testSlug}/traits`);
+  revalidateAndRedirect(path);
 }

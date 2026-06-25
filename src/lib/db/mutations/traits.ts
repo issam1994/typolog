@@ -1,4 +1,5 @@
 import { createClient } from "../supabase-server";
+import { nextSortOrder, resolveTestSlug } from "./helpers";
 
 export type CreateTraitInput = {
   slug: string;
@@ -12,18 +13,10 @@ export async function createTrait(
   input: CreateTraitInput,
 ): Promise<{ error: string | null }> {
   const supabase = await createClient();
-  const { data: last } = await supabase
-    .from("traits")
-    .select("sort_order")
-    .eq("test_id", testId)
-    .order("sort_order", { ascending: false })
-    .limit(1)
-    .single();
-
   const { error } = await supabase.from("traits").insert({
     test_id: testId,
     ...input,
-    sort_order: (last?.sort_order ?? 0) + 1,
+    sort_order: await nextSortOrder(supabase, "traits", testId),
   });
   return { error: error?.message ?? null };
 }
@@ -53,21 +46,12 @@ export async function deleteTrait(
     .eq("trait_id", id)
     .is("deleted_at", null);
 
-  const { data: trait } = await supabase
-    .from("traits")
-    .select("test_id")
-    .eq("id", id)
-    .single();
-  const { data: test } = await supabase
-    .from("tests")
-    .select("slug")
-    .eq("id", trait?.test_id)
-    .single();
+  const testSlug = await resolveTestSlug(supabase, "traits", id);
 
   if (count && count > 0) {
-    return { testSlug: test?.slug ?? null, hasQuestions: true };
+    return { testSlug, hasQuestions: true };
   }
 
   await supabase.from("traits").delete().eq("id", id);
-  return { testSlug: test?.slug ?? null, hasQuestions: false };
+  return { testSlug, hasQuestions: false };
 }

@@ -103,7 +103,7 @@ insert into public.tests (
 ) values (
   'big-five', 'Big Five',
   'Discover your OCEAN personality profile',
-  'A widely-validated personality model measuring five core traits: openness, conscientiousness, extraversion, agreeableness, and emotional stability.',
+  'A widely-validated personality model measuring five core traits: openness, conscientiousness, extraversion, agreeableness, and neuroticism.',
   'likert', 'likert_percentage', 'bars',
   true, 1, 5
 );

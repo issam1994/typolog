@@ -3,7 +3,7 @@ insert into public.traits (id, label, description, sort_order) values
   ('conscientiousness', 'Conscientiousness',  'Organization, discipline, and a strong sense of duty and reliability.',   2),
   ('extraversion',      'Extraversion',       'Sociability, assertiveness, and energy drawn from being around others.',  3),
   ('agreeableness',     'Agreeableness',      'Empathy, cooperativeness, and a genuine concern for others.',             4),
-  ('stability',         'Emotional Stability','Calmness, resilience, and consistency in emotional responses.',           5);
+  ('neuroticism',       'Neuroticism',        'Tendency toward anxiety, emotional reactivity, and mood instability under stress.', 5);
 
 insert into public.questions (text, trait_id, sort_order) values
   ('I enjoy exploring new ideas and unconventional ways of thinking.',    'openness',          1),
@@ -18,6 +18,6 @@ insert into public.questions (text, trait_id, sort_order) values
   ('I genuinely care about the feelings and well-being of others.',       'agreeableness',     10),
   ('I find it easy to forgive people who have wronged me.',               'agreeableness',     11),
   ('I enjoy helping others even when there is nothing in it for me.',     'agreeableness',     12),
-  ('I remain calm and composed under pressure or stress.',                'stability',         13),
-  ('I recover quickly from setbacks and disappointments.',                'stability',         14),
-  ('I rarely experience sudden or intense mood swings.',                  'stability',         15);
+  ('I often feel anxious or on edge under pressure or stress.',           'neuroticism',       13),
+  ('Setbacks and disappointments weigh on me for a long time.',           'neuroticism',       14),
+  ('I frequently experience sudden or intense mood swings.',              'neuroticism',       15);

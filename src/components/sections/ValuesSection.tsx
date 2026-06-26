@@ -1,3 +1,5 @@
+import Reveal from "./Reveal";
+
 const values = [
   {
     title: "Self-Awareness",
@@ -17,11 +19,11 @@ export default function ValuesSection() {
   return (
     <section className="border-t border-border py-24 px-6">
       <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-12">
-        {values.map((value) => (
-          <div key={value.title}>
+        {values.map((value, i) => (
+          <Reveal key={value.title} delay={i * 120}>
             <h3 className="text-lg font-semibold mb-3">{value.title}</h3>
             <p className="text-muted text-sm leading-relaxed">{value.body}</p>
-          </div>
+          </Reveal>
         ))}
       </div>
     </section>

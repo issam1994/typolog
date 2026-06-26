@@ -24,22 +24,22 @@ export default async function TestOverviewPage({ params }: Props) {
       <Navbar />
       <main className="min-h-screen flex flex-col items-center justify-center px-6 pt-20 pb-24">
         <div className="max-w-xl text-center">
-          <p className="text-xs text-muted tracking-widest uppercase mb-6">
+          <p className="animate-fade-in-up text-xs text-muted tracking-widest uppercase mb-6">
             ~{test.estimated_minutes} minutes
           </p>
-          <h1 className="text-5xl sm:text-6xl font-semibold tracking-tight mb-6">
+          <h1 className="animate-fade-in-up [animation-delay:80ms] text-5xl sm:text-6xl font-semibold tracking-tight mb-6">
             {test.name}
           </h1>
-          <p className="text-lg text-muted leading-relaxed mb-10">
+          <p className="animate-fade-in-up [animation-delay:160ms] text-lg text-muted leading-relaxed mb-10">
             {test.description}
           </p>
           <Link
             href={`/tests/${test.slug}/quiz`}
-            className="inline-block px-8 py-4 bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
+            className="animate-fade-in-up [animation-delay:240ms] inline-block px-8 py-4 bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
           >
             Start Test
           </Link>
-          <div className="mt-6">
+          <div className="animate-fade-in-up [animation-delay:320ms] mt-6">
             <Link
               href="/tests"
               className="text-xs text-muted hover:text-foreground transition-colors"

@@ -66,47 +66,52 @@ export default function QuizContainer({
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-16">
-        <p className="text-xs text-muted tracking-widest uppercase mb-10">
-          {current + 1} / {total}
-        </p>
+        <div
+          key={current}
+          className="animate-fade-in w-full flex flex-col items-center"
+        >
+          <p className="text-xs text-muted tracking-widest uppercase mb-10">
+            {current + 1} / {total}
+          </p>
 
-        <h2 className="text-2xl sm:text-3xl font-light text-center max-w-xl leading-snug mb-12">
-          {question.text}
-        </h2>
+          <h2 className="text-2xl sm:text-3xl font-light text-center max-w-xl leading-snug mb-12">
+            {question.text}
+          </h2>
 
-        {isForcedChoice ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg">
-            {question.options.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => selectAnswer(opt.value)}
-                className={`w-full px-5 py-4 text-sm border transition-colors text-left ${
-                  selectedValue === opt.value
-                    ? "bg-foreground text-background border-foreground"
-                    : "border-border text-muted hover:border-foreground/60 hover:text-foreground"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3 w-full max-w-sm">
-            {likertOptions.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => selectAnswer(opt.value)}
-                className={`w-full px-5 py-3 text-sm border transition-colors text-left ${
-                  selectedValue === opt.value
-                    ? "bg-foreground text-background border-foreground"
-                    : "border-border text-muted hover:border-foreground/60 hover:text-foreground"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        )}
+          {isForcedChoice ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg">
+              {question.options.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => selectAnswer(opt.value)}
+                  className={`w-full px-5 py-4 text-sm border transition-colors text-left ${
+                    selectedValue === opt.value
+                      ? "bg-foreground text-background border-foreground"
+                      : "border-border text-muted hover:border-foreground/60 hover:text-foreground"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3 w-full max-w-sm">
+              {likertOptions.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => selectAnswer(opt.value)}
+                  className={`w-full px-5 py-3 text-sm border transition-colors text-left ${
+                    selectedValue === opt.value
+                      ? "bg-foreground text-background border-foreground"
+                      : "border-border text-muted hover:border-foreground/60 hover:text-foreground"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {submitError && (
           <p

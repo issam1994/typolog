@@ -14,7 +14,7 @@ export default function EnneagramTypeTemplate({
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-24 pt-32">
       {archetype ? (
-        <div className="text-center mb-16 max-w-lg">
+        <div className="animate-fade-in-up text-center mb-16 max-w-lg">
           <p className="text-xs text-muted tracking-widest uppercase mb-4">
             Your type
           </p>
@@ -36,7 +36,7 @@ export default function EnneagramTypeTemplate({
           )}
         </div>
       ) : (
-        <h1 className="text-4xl font-semibold tracking-tight mb-16 text-center">
+        <h1 className="animate-fade-in-up text-4xl font-semibold tracking-tight mb-16 text-center">
           Your Results
         </h1>
       )}
@@ -57,8 +57,8 @@ export default function EnneagramTypeTemplate({
               </div>
               <div className="w-full h-px bg-border relative">
                 <div
-                  className="absolute top-0 left-0 h-px bg-foreground transition-all duration-700"
-                  style={{ width: `${pct}%` }}
+                  className="absolute top-0 left-0 h-px bg-foreground animate-grow-bar"
+                  style={{ width: `${pct}%`, animationDelay: `${i * 60}ms` }}
                 />
               </div>
             </div>

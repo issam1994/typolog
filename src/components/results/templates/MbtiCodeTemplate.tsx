@@ -24,7 +24,7 @@ export default function MbtiCodeTemplate({
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-24 pt-32">
       {archetype ? (
-        <div className="text-center mb-16 max-w-lg">
+        <div className="animate-fade-in-up text-center mb-16 max-w-lg">
           <p className="text-xs text-muted tracking-widest uppercase mb-4">
             Your type
           </p>
@@ -46,13 +46,13 @@ export default function MbtiCodeTemplate({
           )}
         </div>
       ) : (
-        <h1 className="text-4xl font-semibold tracking-tight mb-16 text-center">
+        <h1 className="animate-fade-in-up text-4xl font-semibold tracking-tight mb-16 text-center">
           Your Results
         </h1>
       )}
 
       <div className="w-full max-w-xl space-y-8">
-        {pairs.map(([a, b]) => {
+        {pairs.map(([a, b], i) => {
           const pctA = scores[a.slug] ?? 50;
           const dominant = pctA >= 50 ? a : b;
           const recessive = pctA >= 50 ? b : a;
@@ -78,8 +78,8 @@ export default function MbtiCodeTemplate({
               </div>
               <div className="w-full h-px bg-border relative">
                 <div
-                  className="absolute top-0 left-0 h-px bg-foreground transition-all duration-700"
-                  style={{ width: `${pctA}%` }}
+                  className="absolute top-0 left-0 h-px bg-foreground animate-grow-bar"
+                  style={{ width: `${pctA}%`, animationDelay: `${i * 80}ms` }}
                 />
               </div>
               <p className="mt-1 text-xs text-muted">

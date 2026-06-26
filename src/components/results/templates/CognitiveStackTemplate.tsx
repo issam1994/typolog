@@ -19,7 +19,7 @@ export default function CognitiveStackTemplate({
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-24 pt-32">
-      <div className="text-center mb-16">
+      <div className="animate-fade-in-up text-center mb-16">
         <p className="text-xs text-muted tracking-widest uppercase mb-4">
           Your cognitive stack
         </p>
@@ -55,8 +55,8 @@ export default function CognitiveStackTemplate({
               </div>
               <div className="w-full h-px bg-border relative">
                 <div
-                  className="absolute top-0 left-0 h-px bg-foreground transition-all duration-700"
-                  style={{ width: `${pct}%` }}
+                  className="absolute top-0 left-0 h-px bg-foreground animate-grow-bar"
+                  style={{ width: `${pct}%`, animationDelay: `${i * 60}ms` }}
                 />
               </div>
               {i < 4 && trait.description && (

@@ -54,49 +54,55 @@ export default function MbtiCodeTemplate({
       <div className="w-full max-w-xl space-y-8">
         {pairs.map(([a, b], i) => {
           const pctA = scores[a.slug] ?? 50;
-          const dominant = pctA >= 50 ? a : b;
-          const recessive = pctA >= 50 ? b : a;
-          const dominantPct = pctA >= 50 ? pctA : 100 - pctA;
+          const pctB = 100 - pctA;
+          const dominantA = pctA >= pctB;
 
           return (
-            <div key={a.slug}>
-              <div className="flex justify-between items-baseline mb-2 text-sm">
-                <span
-                  className={
-                    dominant.slug === a.slug ? "font-medium" : "text-muted"
-                  }
-                >
-                  {a.label}
-                </span>
-                <span
-                  className={
-                    dominant.slug === b.slug ? "font-medium" : "text-muted"
-                  }
-                >
-                  {b.label}
-                </span>
-              </div>
-              <div className="w-full h-px bg-border relative">
-                <div
-                  className="absolute top-0 left-0 h-px bg-foreground animate-grow-bar"
-                  style={{ width: `${pctA}%`, animationDelay: `${i * 80}ms` }}
-                />
-              </div>
-              <p className="mt-1 text-xs text-muted">
-                {dominantPct}% {dominant.label} · {100 - dominantPct}%{" "}
-                {recessive.label}
-              </p>
+            <div key={a.slug} className="space-y-3">
+              {([a, b] as const).map((trait, j) => {
+                const pct = j === 0 ? pctA : pctB;
+                const isDominant = j === 0 ? dominantA : !dominantA;
+                return (
+                  <div key={trait.slug}>
+                    <div className="flex justify-between items-baseline mb-2 text-sm">
+                      <span
+                        className={isDominant ? "font-medium" : "text-muted"}
+                      >
+                        {trait.label}
+                      </span>
+                      <span className="text-muted">{pct}%</span>
+                    </div>
+                    <div className="w-full h-px bg-border relative">
+                      <div
+                        className="absolute top-0 left-0 h-px bg-foreground animate-grow-bar"
+                        style={{
+                          width: `${pct}%`,
+                          animationDelay: `${i * 160 + j * 80}ms`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           );
         })}
       </div>
 
-      <Link
-        href={`/tests/${test.slug}/quiz`}
-        className="mt-16 px-6 py-3 text-sm border border-border text-muted hover:border-foreground/60 hover:text-foreground transition-colors"
-      >
-        Retake the Test
-      </Link>
+      <div className="flex gap-4 mt-16 flex-wrap justify-center">
+        <Link
+          href="/tests"
+          className="px-6 py-3 text-sm border border-border text-muted hover:border-foreground/60 hover:text-foreground transition-colors"
+        >
+          Back to Tests
+        </Link>
+        <Link
+          href={`/tests/${test.slug}/quiz`}
+          className="px-6 py-3 text-sm border border-border text-muted hover:border-foreground/60 hover:text-foreground transition-colors"
+        >
+          Retake the Test
+        </Link>
+      </div>
     </div>
   );
 }

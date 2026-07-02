@@ -67,12 +67,20 @@ export default function CognitiveStackTemplate({
         })}
       </div>
 
-      <Link
-        href={`/tests/${test.slug}/quiz`}
-        className="mt-16 px-6 py-3 text-sm border border-border text-muted hover:border-foreground/60 hover:text-foreground transition-colors"
-      >
-        Retake the Test
-      </Link>
+      <div className="flex gap-4 mt-16 flex-wrap justify-center">
+        <Link
+          href="/tests"
+          className="px-6 py-3 text-sm border border-border text-muted hover:border-foreground/60 hover:text-foreground transition-colors"
+        >
+          Back to Tests
+        </Link>
+        <Link
+          href={`/tests/${test.slug}/quiz`}
+          className="px-6 py-3 text-sm border border-border text-muted hover:border-foreground/60 hover:text-foreground transition-colors"
+        >
+          Retake the Test
+        </Link>
+      </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import QuizContainer from "@/components/quiz/QuizContainer";
+import Navbar from "@/components/layout/Navbar";
 import { getTestBundle } from "@/lib/db/queries";
 import { likertOptions } from "@/constants/likert";
 
@@ -20,10 +21,13 @@ export default async function QuizPage({ params }: Props) {
   const { test, questions } = bundle;
 
   return (
-    <QuizContainer
-      testSlug={test.slug}
-      questions={questions}
-      likertOptions={likertOptions}
-    />
+    <>
+      <Navbar />
+      <QuizContainer
+        testSlug={test.slug}
+        questions={questions}
+        likertOptions={likertOptions}
+      />
+    </>
   );
 }

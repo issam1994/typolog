@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { submitQuiz } from "@/app/tests/[slug]/quiz/actions";
+import { saveResult } from "@/lib/results-storage";
 import type { Question, LikertOption } from "@/types/quiz";
 
 type Props = {
@@ -44,8 +45,17 @@ export default function QuizContainer({
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const { submissionId } = await submitQuiz(testSlug, answers);
-      localStorage.setItem(`typolog_submission:${testSlug}`, submissionId);
+      const { submissionId, archetypeCode, scores } = await submitQuiz(
+        testSlug,
+        answers,
+      );
+      saveResult(testSlug, {
+        submissionId,
+        scores,
+        archetypeCode,
+        archetype: null,
+        submittedAt: new Date().toISOString(),
+      });
       router.push(`/tests/${testSlug}/results?submission=${submissionId}`);
     } catch (err) {
       console.error("Quiz submission failed", err);

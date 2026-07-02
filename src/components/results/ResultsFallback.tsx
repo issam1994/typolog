@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useStoredResult } from "@/lib/use-stored-results";
 
 type Props = {
   testSlug: string;
@@ -10,13 +11,15 @@ type Props = {
 
 export default function ResultsFallback({ testSlug }: Props) {
   const router = useRouter();
+  const stored = useStoredResult(testSlug);
 
   useEffect(() => {
-    const id = localStorage.getItem(`typolog_submission:${testSlug}`);
-    if (id) {
-      router.replace(`/tests/${testSlug}/results?submission=${id}`);
+    if (stored?.submissionId) {
+      router.replace(
+        `/tests/${testSlug}/results?submission=${stored.submissionId}`,
+      );
     }
-  }, [testSlug, router]);
+  }, [stored, testSlug, router]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center text-center px-6 pt-20">

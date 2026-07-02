@@ -102,3 +102,11 @@ export type Submission = {
   scores: ScoreMap;
   archetype_code: string | null;
 };
+
+export type StoredResult = {
+  submissionId: string;
+  scores: ScoreMap;
+  archetypeCode: string | null;
+  archetype: Archetype | null;
+  submittedAt: string;
+};

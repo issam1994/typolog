@@ -27,5 +27,5 @@ export async function submitQuiz(
     scores,
     archetypeCode,
   );
-  return { submissionId: id, archetypeCode };
+  return { submissionId: id, archetypeCode, scores };
 }

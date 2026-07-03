@@ -59,7 +59,7 @@ export default function CognitiveStackTemplate({
                   style={{ width: `${pct}%`, animationDelay: `${i * 60}ms` }}
                 />
               </div>
-              {i < 4 && trait.description && (
+              {trait.description && (
                 <p className="mt-1 text-xs text-muted">{trait.description}</p>
               )}
             </div>

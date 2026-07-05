@@ -1,9 +1,15 @@
 import { notFound } from "next/navigation";
-import { getTestBundle, getSubmission, getArchetype } from "@/lib/db/queries";
+import {
+  getTestBundle,
+  getSubmission,
+  getArchetype,
+  getPublishedTests,
+} from "@/lib/db/queries";
 import ResultsDisplay from "@/components/results/ResultsDisplay";
 import ResultsFallback from "@/components/results/ResultsFallback";
 import ResultsPersistor from "@/components/results/ResultsPersistor";
 import ResultsFromLocalStorage from "@/components/results/ResultsFromLocalStorage";
+import TestRecommendations from "@/components/results/TestRecommendations";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -48,6 +54,8 @@ export default async function ResultsPage({ params, searchParams }: Props) {
     );
   }
 
+  const allTests = await getPublishedTests();
+
   return (
     <>
       <ResultsPersistor
@@ -65,6 +73,7 @@ export default async function ResultsPage({ params, searchParams }: Props) {
         archetype={archetype}
         archetypeCode={submission.archetype_code}
       />
+      <TestRecommendations currentSlug={slug} allTests={allTests} />
     </>
   );
 }

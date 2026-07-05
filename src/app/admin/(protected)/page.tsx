@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getAllTests, getOverviewStats, getAllTraits } from "@/lib/db/queries";
 import { requireAdmin } from "@/lib/db/auth";
+import { LineChart } from "@/components/admin/Chart";
 
 export const metadata = { title: "Overview — Typolog Admin" };
 
@@ -21,6 +22,23 @@ export default async function AdminOverviewPage() {
   const last7dAll = statsPerTest.reduce((s, x) => s + x.stats.last7d, 0);
   const last30dAll = statsPerTest.reduce((s, x) => s + x.stats.last30d, 0);
 
+  // Merge per-test daily counts into one combined series
+  const combinedDailyCounts = (() => {
+    if (statsPerTest.length === 0) return [];
+    const merged: Record<string, number> = {};
+    statsPerTest[0].stats.dailyCounts.forEach(({ date }) => {
+      merged[date] = 0;
+    });
+    statsPerTest.forEach(({ stats }) => {
+      stats.dailyCounts.forEach(({ date, count }) => {
+        merged[date] = (merged[date] ?? 0) + count;
+      });
+    });
+    return Object.entries(merged)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, count]) => ({ date, count }));
+  })();
+
   return (
     <div className="px-8 py-8 max-w-5xl mx-auto">
       <div className="mb-8">
@@ -28,11 +46,20 @@ export default async function AdminOverviewPage() {
         <p className="text-sm text-muted mt-1">All tests combined</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-10">
+      <div className="grid grid-cols-3 gap-4 mb-6">
         <KpiCard label="Total Submissions" value={totalAll} />
         <KpiCard label="Last 7 Days" value={last7dAll} />
         <KpiCard label="Last 30 Days" value={last30dAll} />
       </div>
+
+      {combinedDailyCounts.length > 0 && (
+        <div className="border border-border p-4 mb-10">
+          <p className="text-xs text-muted tracking-widest uppercase mb-3">
+            30-Day Trend
+          </p>
+          <LineChart data={combinedDailyCounts} />
+        </div>
+      )}
 
       <h2 className="text-xs text-muted tracking-widest uppercase mb-4">
         By Test

@@ -1,7 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTest, getAllTraits, getSubmissions } from "@/lib/db/queries";
+import {
+  getTest,
+  getAllTraits,
+  getSubmissions,
+  getOverviewStats,
+  getArchetypeDistribution,
+  getArchetypes,
+} from "@/lib/db/queries";
 import { requireAdmin } from "@/lib/db/auth";
+import { TestAnalyticsSection } from "@/components/admin/TestAnalyticsSection";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -20,9 +28,12 @@ export default async function TestResultsPage({ params, searchParams }: Props) {
   const test = await getTest(slug);
   if (!test) notFound();
 
-  const [submissions, traits] = await Promise.all([
+  const traits = await getAllTraits(test.id);
+  const [submissions, stats, archetypeDist, archetypes] = await Promise.all([
     getSubmissions({ before, limit: 50, testId: test.id }),
-    getAllTraits(test.id),
+    getOverviewStats(traits, test.id),
+    getArchetypeDistribution(test.id),
+    getArchetypes(test.id),
   ]);
 
   const older =
@@ -42,6 +53,14 @@ export default async function TestResultsPage({ params, searchParams }: Props) {
           Export CSV
         </a>
       </div>
+
+      {stats.total > 0 && (
+        <TestAnalyticsSection
+          stats={stats}
+          archetypeDist={archetypeDist}
+          archetypes={archetypes}
+        />
+      )}
 
       {submissions.length === 0 ? (
         <p className="text-sm text-muted py-8">No submissions yet.</p>

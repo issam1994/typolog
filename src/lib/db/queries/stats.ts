@@ -1,6 +1,30 @@
 import type { Trait } from "@/types/quiz";
 import { createClient } from "../supabase-server";
 
+export type ArchetypeCount = { archetype_code: string | null; count: number };
+
+export async function getArchetypeDistribution(
+  testId: string,
+): Promise<ArchetypeCount[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("submissions")
+    .select("archetype_code")
+    .eq("test_id", testId);
+  if (!data) return [];
+  const counts: Record<string, number> = {};
+  for (const row of data) {
+    const code = row.archetype_code ?? "__none__";
+    counts[code] = (counts[code] ?? 0) + 1;
+  }
+  return Object.entries(counts)
+    .map(([code, count]) => ({
+      archetype_code: code === "__none__" ? null : code,
+      count,
+    }))
+    .sort((a, b) => b.count - a.count);
+}
+
 export type OverviewStats = {
   total: number;
   last7d: number;

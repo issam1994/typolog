@@ -3,6 +3,7 @@ import { getTest, getAllQuestions, getAllTraits } from "@/lib/db/queries";
 import { requireAdmin } from "@/lib/db/auth";
 import { QuestionRow } from "./QuestionRow";
 import { CreateQuestionModal } from "./CreateQuestionModal";
+import { ImportQuestionsModal } from "./ImportQuestionsModal";
 
 export const metadata = { title: "Questions — Typolog Admin" };
 
@@ -42,6 +43,7 @@ export default async function QuestionsPage({ params, searchParams }: Props) {
         <h1 className="text-xl font-semibold tracking-tight">Questions</h1>
         <div className="flex items-center gap-4">
           <span className="text-xs text-muted">{questions.length} active</span>
+          <ImportQuestionsModal testSlug={slug} />
           <CreateQuestionModal
             testId={test.id}
             testSlug={slug}

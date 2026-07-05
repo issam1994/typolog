@@ -1,10 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { submitQuiz } from "@/app/tests/[slug]/quiz/actions";
 import { saveResult } from "@/lib/results-storage";
 import type { Question, LikertOption } from "@/types/quiz";
+
+type ProgressData = { answers: Record<string, number>; current: number };
+
+const progressKey = (slug: string) => `typolog_quiz_progress:${slug}`;
+
+function loadProgress(
+  testSlug: string,
+  maxIndex: number,
+): { answers: Record<string, number>; current: number } {
+  try {
+    if (typeof window === "undefined") return { answers: {}, current: 0 };
+    const raw = localStorage.getItem(progressKey(testSlug));
+    if (raw) {
+      const saved = JSON.parse(raw) as ProgressData;
+      return {
+        answers: saved.answers,
+        current: Math.min(saved.current, maxIndex),
+      };
+    }
+  } catch {}
+  return { answers: {}, current: 0 };
+}
 
 type Props = {
   testSlug: string;
@@ -18,10 +40,25 @@ export default function QuizContainer({
   likertOptions,
 }: Props) {
   const router = useRouter();
-  const [current, setCurrent] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [current, setCurrent] = useState(
+    () => loadProgress(testSlug, questions.length - 1).current,
+  );
+  const [answers, setAnswers] = useState<Record<string, number>>(
+    () => loadProgress(testSlug, questions.length - 1).answers,
+  );
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Persist progress on every change
+  useEffect(() => {
+    if (Object.keys(answers).length === 0) return;
+    try {
+      localStorage.setItem(
+        progressKey(testSlug),
+        JSON.stringify({ answers, current }),
+      );
+    } catch {}
+  }, [answers, current, testSlug]);
 
   const question = questions[current];
   const total = questions.length;
@@ -56,6 +93,9 @@ export default function QuizContainer({
         archetype: null,
         submittedAt: new Date().toISOString(),
       });
+      try {
+        localStorage.removeItem(progressKey(testSlug));
+      } catch {}
       router.push(`/tests/${testSlug}/results?submission=${submissionId}`);
     } catch (err) {
       console.error("Quiz submission failed", err);

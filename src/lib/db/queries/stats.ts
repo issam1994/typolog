@@ -1,7 +1,13 @@
 import type { Trait } from "@/types/quiz";
 import { createClient } from "../supabase-server";
+import {
+  archetypeDistribution,
+  dailyCounts,
+  traitAverages,
+  type ArchetypeCount,
+} from "@/lib/stats/aggregate";
 
-export type ArchetypeCount = { archetype_code: string | null; count: number };
+export type { ArchetypeCount };
 
 export async function getArchetypeDistribution(
   testId: string,
@@ -11,18 +17,7 @@ export async function getArchetypeDistribution(
     .from("submissions")
     .select("archetype_code")
     .eq("test_id", testId);
-  if (!data) return [];
-  const counts: Record<string, number> = {};
-  for (const row of data) {
-    const code = row.archetype_code ?? "__none__";
-    counts[code] = (counts[code] ?? 0) + 1;
-  }
-  return Object.entries(counts)
-    .map(([code, count]) => ({
-      archetype_code: code === "__none__" ? null : code,
-      count,
-    }))
-    .sort((a, b) => b.count - a.count);
+  return archetypeDistribution(data ?? []);
 }
 
 export type OverviewStats = {
@@ -67,51 +62,16 @@ export async function getOverviewStats(
       })(),
     ]);
 
-  const last30dData = recent ?? [];
-
-  const dayCounts: Record<string, number> = {};
-  const days: string[] = [];
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-    const key = d.toISOString().slice(0, 10);
-    days.push(key);
-    dayCounts[key] = 0;
-  }
-  last30dData.forEach((s) => {
-    const key = (s.submitted_at as string).slice(0, 10);
-    if (dayCounts[key] !== undefined) dayCounts[key]++;
-  });
-  const dailyCounts = days.map((date) => ({ date, count: dayCounts[date] }));
-
-  const traitSums: Record<string, number> = {};
-  const traitCounts: Record<string, number> = {};
-  traits.forEach(({ slug }) => {
-    traitSums[slug] = 0;
-    traitCounts[slug] = 0;
-  });
-  last30dData.forEach((s) => {
-    const scores = s.scores as Record<string, number>;
-    Object.entries(scores).forEach(([slugKey, pct]) => {
-      if (slugKey in traitSums) {
-        traitSums[slugKey] += pct;
-        traitCounts[slugKey]++;
-      }
-    });
-  });
-  const traitAverages = traits.map((t) => ({
-    id: t.id,
-    label: t.label,
-    average:
-      traitCounts[t.slug] > 0
-        ? Math.round(traitSums[t.slug] / traitCounts[t.slug])
-        : 0,
-  }));
+  const last30dData = (recent ?? []) as {
+    submitted_at: string;
+    scores: Record<string, number>;
+  }[];
 
   return {
     total: total ?? 0,
     last7d: last7d ?? 0,
     last30d: last30dData.length,
-    dailyCounts,
-    traitAverages,
+    dailyCounts: dailyCounts(last30dData, now),
+    traitAverages: traitAverages(traits, last30dData),
   };
 }

@@ -7,7 +7,7 @@ type QuestionRow = Omit<Question, "options"> & {
 };
 
 /** Lift a joined DB row into a domain {@link Question} with sorted options. */
-function rowToQuestion(row: QuestionRow): Question {
+export function rowToQuestion(row: QuestionRow): Question {
   const { question_options, ...rest } = row;
   const options = [...(question_options ?? [])].sort(
     (a, b) => a.sort_order - b.sort_order,

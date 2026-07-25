@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/db/auth";
 import { getTest, getAllTraits, getSubmissions } from "@/lib/db/queries";
+import { buildSubmissionsCsv } from "@/lib/export/csv";
 import { notFound } from "next/navigation";
 
 type Params = {
@@ -18,21 +19,7 @@ export async function GET(_req: Request, { params }: Params) {
     getAllTraits(test.id),
   ]);
 
-  const traitSlugs = traits.map((t) => t.slug);
-  const headers = ["id", "submitted_at", "archetype_code", ...traitSlugs].join(
-    ",",
-  );
-  const rows = submissions.map((s) => {
-    const sc = s.scores as Record<string, number>;
-    return [
-      s.id,
-      s.submitted_at,
-      s.archetype_code ?? "",
-      ...traitSlugs.map((slug) => sc[slug] ?? 0),
-    ].join(",");
-  });
-
-  const csv = [headers, ...rows].join("\n");
+  const csv = buildSubmissionsCsv(submissions, traits);
 
   return new Response(csv, {
     headers: {

@@ -47,14 +47,19 @@ export default function TopProgressBar() {
 
     const start = () => {
       clearTimers();
-      setAnimKey((k) => k + 1);
-      setPhase("loading");
-      setScale(0);
-      setVisible(false);
-      requestAnimationFrame(() => {
+      // The router invokes history methods from within React's
+      // insertion-effect phase, where scheduling updates synchronously is
+      // disallowed. Defer to a microtask so state updates run after commit.
+      queueMicrotask(() => {
+        setAnimKey((k) => k + 1);
+        setPhase("loading");
+        setScale(0);
+        setVisible(false);
         requestAnimationFrame(() => {
-          setScale(0.85);
-          setVisible(true);
+          requestAnimationFrame(() => {
+            setScale(0.85);
+            setVisible(true);
+          });
         });
       });
     };
@@ -119,7 +124,7 @@ export default function TopProgressBar() {
       </Suspense>
       <div
         aria-hidden
-        className="pointer-events-none fixed top-0 left-0 right-0 h-[3px] z-[9999]"
+        className="pointer-events-none fixed top-0 left-0 right-0 h-0.75 z-9999"
       >
         <div key={animKey} style={barStyle} />
       </div>
